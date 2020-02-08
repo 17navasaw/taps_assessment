@@ -38,23 +38,19 @@ class Households(Resource):
             cursor.execute(query, arguments_list)
             conn.commit()
 
-            # query_result = cursor.fetchall()
-            #
-            # print(query_result)
-            # items_list = [];
-            # for household in query_result:
-            #     i = {
-            #         'Id': query_result[0],
-            #         'HousingType': query_result[1]
-            #     }
-            # items_list.append(i)
+            query_get_latest_id = "SELECT * FROM household WHERE ID = (SELECT MAX(ID) FROM household)"
+            cursor.execute(query_get_latest_id)
+            query_result = cursor.fetchall()
+            print(query_result)
+            household_details = {'Id': query_result[0][0], 'HousingType': query_result[0][1]}
+
+            cursor.close()
+            conn.close()
+            return {'StatusCode': '200', 'HouseholdAdded': household_details}
 
         except Exception as e:
             print("Exception: {}".format(e))
-
-        finally:
-            cursor.close()
-            conn.close()
+            return {'error': str(e)}
 
 
 class Grant(Resource):
@@ -62,6 +58,7 @@ class Grant(Resource):
     def post(self):
 
         return {"status": "success"}
+
 
 api.add_resource(Grant, '/grant')
 api.add_resource(Households, '/households/add', '/households')
