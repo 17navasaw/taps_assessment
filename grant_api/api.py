@@ -18,6 +18,7 @@ api = Api(app)
 
 class Households(Resource):
 
+    # list households
     def get(self):
         try:
             conn = db.connect()
@@ -54,7 +55,7 @@ class Households(Resource):
             # return {'error': str(e)}
             return {'StatusCode': '500'}
 
-
+    # add household
     def post(self):
         try:
             # Parse the arguments
@@ -84,7 +85,48 @@ class Households(Resource):
         except Exception as e:
             print("Exception: {}".format(e))
             # return {'error': str(e)}
-            return {'StatusCode': '500'}
+            return {'StatusCode': '400'}
+
+
+class Household(Resource):
+
+    # get household
+    def get(self, householdid):
+        try:
+            conn = db.connect()
+            cursor = conn.cursor()
+
+            householdid = int(householdid)
+
+            query_get_household = "SELECT * FROM household WHERE ID=%s"
+            cursor.execute(query_get_household, [householdid])
+            query_result_household = cursor.fetchall()
+            query_get_family_members = "SELECT * FROM familymember WHERE HouseholdId=%s"
+            cursor.execute(query_get_family_members, householdid)
+            family_members = []
+            query_family_result = cursor.fetchall()
+            for family_member in query_family_result:
+                family_member_details = {
+                    'Id': family_member[0],
+                    "name": family_member[2],
+                    "gender": family_member[3],
+                    "marital_status": family_member[4],
+                    "spouse": family_member[5],
+                    "occupation_type": family_member[6],
+                    "annual_income": family_member[7],
+                    "dob": family_member[8].strftime('%Y-%m-%d')
+                }
+                family_members.append(family_member_details)
+            household_details = {'Id': query_result_household[0][0], 'HousingType': query_result_household[0][1], 'FamilyMembers':family_members}
+
+            cursor.close()
+            conn.close()
+            return {'StatusCode': '200', 'Household': household_details}
+
+        except Exception as e:
+            print("Exception: {}".format(e))
+            # return {'error': str(e)}
+            return {'StatusCode': '400'}
 
 
 class FamilyMember(Resource):
@@ -113,20 +155,14 @@ class FamilyMember(Resource):
 
             cursor.execute(query, arguments_list)
             conn.commit()
-            #
-            # query_get_latest_id = "SELECT * FROM household WHERE ID = (SELECT MAX(ID) FROM household)"
-            # cursor.execute(query_get_latest_id)
-            # query_result = cursor.fetchall()
-            # print(query_result)
-            # household_details = {'Id': query_result[0][0], 'HousingType': query_result[0][1]}
-            #
+
             cursor.close()
             conn.close()
             return {'StatusCode': '200'}
 
         except Exception as e:
             print("Exception: {}".format(e))
-            return {'StatusCode': '500'}
+            return {'StatusCode': '400'}
             # return {'error': str(e)}
 
 
@@ -138,6 +174,7 @@ class Grant(Resource):
 
 
 api.add_resource(Grant, '/grant')
+api.add_resource(Household, '/households/<householdid>')
 api.add_resource(Households, '/households/add', '/households')
 api.add_resource(FamilyMember, '/households/<householdid>/add')
 
