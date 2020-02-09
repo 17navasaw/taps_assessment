@@ -39,7 +39,10 @@ MySQL environment:
 3. Households will contain a maximum of 1 couple and any other person below 18 is assumed to be their children
 4. A married man will have his spouse in the same household
 
-### Interpretations
+### Interpretations/Explanations
 For the fifth endpoint, search criteria for finding households belonging to the respective grants are exact household 
 size and income limit. This means that only households with the stated household size and total annual income less than the
 income limit stated will be listed.
+
+Endpoints which require adding of family member or household will end with /add and are POST requests. The rest of the
+listing endpoints are GET requests and are named according to what is being listed.
